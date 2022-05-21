@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const app = express();
 const db = require("./config/db").promise();
-const bodyParser = require("body-parser");
+// const bodyParser = require("body-parser");
 
 dotenv.config();
 app.use(cookieParser());
@@ -16,8 +16,8 @@ app.use(
   })
 );
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
 
 const post = require("./routes/postsRouter.js");
 app.use("/api/post", post);

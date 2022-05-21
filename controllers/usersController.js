@@ -4,24 +4,21 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const getUsers = async (req, res) => {
-  try {
-    const users = await Users.findAll({
-      attributes: ["id", "name", "email"],
-    });
-    res.json(users);
-  } catch (error) {
-    console.log(error);
-  }
+  const users = await Users.findAll({
+    attributes: ["id", "name", "email"],
+  });
+  res.status(200).send(users);
 };
 
 const Register = async (req, res) => {
   const { name, email, password, confPassword } = req.body;
+  const filter = /^([a-zA-Z0-9_.-])+@(([a-zA-Z0-9-])+.)+([a-zA-Z0-9]{2,4})+$/;
+
   if (password !== confPassword)
     return res
       .status(400)
       .json({ msg: "Password dan Confirm Password tidak cocok" });
-  const salt = await bcrypt.genSalt();
-  const hashPassword = await bcrypt.hash(password, salt);
+
   if (!password || password.length < 0) {
     return res.status(400).json({ msg: "Password tidak boleh kosong" });
   } else if (!password || password.length < 8) {
@@ -32,35 +29,39 @@ const Register = async (req, res) => {
   } else if (!name || name.length < 8) {
     return res.status(400).json({ msg: "Username minimal harus 8 karakter" });
   }
-  const filter = /^([a-zA-Z0-9_.-])+@(([a-zA-Z0-9-])+.)+([a-zA-Z0-9]{2,4})+$/;
+
   if (!email || email.length < 0) {
     return res.status(400).json({ msg: "Email tidak boleh kosong " });
   } else if (!filter.test(email)) {
     return res.status(400).json({ msg: "Harap sertakan '@' di email " });
   }
-  try {
-    await Users.create({
-      name: name,
-      email: email,
-      password: hashPassword,
-    });
-    res.json({ msg: "Register Berhasil" });
-  } catch (error) {
-    console.log(error);
-  }
+
+  const salt = await bcrypt.genSalt();
+  const hashPassword = await bcrypt.hash(password, salt);
+  let info = {
+    name: name,
+    email: email,
+    password: hashPassword,
+  };
+
+  const users = await Users.create(info);
+  res.status(200).send(users);
+  res.json({ msg: "Register Berhasil" });
 };
 
 const Login = async (req, res) => {
   const { email, password } = req.body;
   const filter = /^([a-zA-Z0-9_.-])+@(([a-zA-Z0-9-])+.)+([a-zA-Z0-9]{2,4})+$/;
-  if (!password || password.length < 0) {
+
+  if (!password || password.length < 0)
     return res.status(400).json({ msg: "Password tidak boleh kosong" });
-  }
-  if (!email || email.length < 0) {
+
+  if (!email || email.length < 0)
     return res.status(400).json({ msg: "Email tidak boleh kosong " });
-  } else if (!filter.test(email)) {
+
+  if (!filter.test(email))
     return res.status(400).json({ msg: "Harap sertakan '@' di email " });
-  }
+
   try {
     const user = await Users.findAll({
       where: {

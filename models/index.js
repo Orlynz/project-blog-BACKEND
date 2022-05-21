@@ -40,7 +40,6 @@ db.comment.belongsTo(db.post, {
   as: "post",
 });
 
-
 //one to many
 db.category.hasMany(db.post, {
   foreignKey: "category_id",
